@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import tempfile
 from datetime import datetime
+import os
 
 st.set_page_config(page_title="Extrator de CTEs", layout="centered")
 
@@ -49,15 +50,27 @@ if uploaded_file:
     st.success("PDF carregado com sucesso! Processando...")
 
     dados = extrair_ctes(caminho_pdf)
+
     if dados:
         df = pd.DataFrame(dados)
+
+        # 🔹 pega o nome do arquivo PDF (sem .pdf)
+        nome_base = os.path.splitext(uploaded_file.name)[0]
+
+        # 🔹 adiciona data/hora para evitar sobrescrever
         agora = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        nome_arquivo = f"Resumo_CTEs_{agora}.xlsx"
+
+        nome_arquivo = f"{nome_base}_Resumo_CTEs_{agora}.xlsx"
+
         df.to_excel(nome_arquivo, index=False)
 
         st.dataframe(df)
 
         with open(nome_arquivo, "rb") as f:
-            st.download_button("📥 Baixar Excel", f, file_name=nome_arquivo)
+            st.download_button(
+                "📥 Baixar Excel",
+                f,
+                file_name=nome_arquivo
+            )
     else:
         st.warning("Nenhum CTE encontrado no arquivo.")
